@@ -18,13 +18,11 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample> {
   PointEntity pointA = PointEntity(x: 0, y: 0);
   PointEntity pointB = PointEntity(x: 0, y: 0);
   PointEntity initialPoint = PointEntity(x: 0, y: 0);
-  // JoystickMode _joystickMode = JoystickMode.all;
-  @override
-  void initState() {
+  void initPoints() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       pointA = PointEntity(
-        x: MediaQuery.of(context).size.width / 3 - BALL_SIZE / 2, //horizontal
-        y: MediaQuery.of(context).size.height / 3 - BALL_SIZE / 2,
+        x: MediaQuery.of(context).size.width / 4 - BALL_SIZE / 2, //horizontal
+        y: MediaQuery.of(context).size.height / 2.7 - BALL_SIZE / 2,
       );
       initialPoint.x = pointA.x - (SUMO_SIZE / 2) + (BALL_SIZE / 2);
       initialPoint.y = pointA.y - (SUMO_SIZE / 2) + (BALL_SIZE / 2);
@@ -39,20 +37,22 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample> {
       );
       setState(() {});
     });
+  }
+
+  @override
+  void initState() {
+    initPoints();
     super.initState();
   }
 
   bool isInCicle(PointEntity point) =>
       pow(point.x - initialPoint.x, 2) + pow(point.y - initialPoint.y, 2) <
       pow(SUMO_SIZE / 2, 2);
-  // @override
-  // void didChangeDependencies() {
-  //   point = PointEntity(
-  //     x: MediaQuery.of(context).size.height / 0.7 - BALL_SIZE / 2, //horizontal
-  //     y: MediaQuery.of(context).size.width / 5 - BALL_SIZE / 2,
-  //   );
-  //   super.didChangeDependencies();
-  // }
+  @override
+  void didChangeDependencies() {
+    initPoints();
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
