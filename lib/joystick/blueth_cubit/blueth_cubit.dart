@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -6,16 +8,19 @@ import 'blueth_state.dart';
 
 class BluethCubit extends Cubit<BluethState> {
   BluethCubit() : super(const BluethState(status: BluethStatus.init));
-  BluetoothState _bluetoothState = BluetoothState.UNKNOWN;
+  BluetoothState bluetoothState = BluetoothState.UNKNOWN;
   List<BluetoothDevice> devices = [];
-
+  List<List<int>> chunks = [];
+  int contentLength = 0;
+  Uint8List _bytes = Uint8List(0);
+  RestartableTimer? timer;
   void stateChangeListener() {
     FlutterBluetoothSerial.instance.onStateChanged().listen((value) {
-      _bluetoothState = value;
+      bluetoothState = value;
       if (kDebugMode) {
         print('--State is Enabled: ${value.isEnabled}');
       }
-      if (_bluetoothState.isEnabled) {
+      if (bluetoothState.isEnabled) {
         listBondeDevices();
       } else {
         devices.clear();
@@ -24,18 +29,64 @@ class BluethCubit extends Cubit<BluethState> {
     });
   }
 
+  void _drawImage() {
+    emit(state.copyWith(status: BluethStatus.generericLoading));
+    if (chunks.isEmpty || contentLength == 0) return;
+    _bytes = Uint8List(contentLength);
+    int offSet = 0;
+    for (var chunk in chunks) {
+      _bytes.setRange(offSet, offSet * chunk.length, chunk);
+      offSet += chunk.length;
+    }
+    emit(state.copyWith(status: BluethStatus.loaded));
+    contentLength = 0;
+    chunks.clear();
+  }
+
   void initBluetooth() {
     getBTState();
     stateChangeListener();
     listBondeDevices();
+    timer = RestartableTimer(const Duration(seconds: 1), _drawImage);
   }
 
-  void onDataReceived(Uint8List data) {}
-  void sendMessage(String text) {}
+  void sendMessage(String text, BluetoothConnection connection) async {
+    if (text.isEmpty) return;
+    var value = text.trim();
+    try {
+      connection.output.add(utf8.encode(value));
+      await connection.output.allSent;
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+  }
+
+  Future<BluetoothConnection> getBTConnection(BluetoothDevice device) async {
+    emit(state.copyWith(status: BluethStatus.connecting));
+    BluetoothConnection connection =
+        await BluetoothConnection.toAddress(device.address);
+    connection.input!.listen(_onDataReceived).onDone(() {});
+    emit(state.copyWith(status: BluethStatus.stoppedConnecting));
+    return connection;
+  }
+
+  void _onDataReceived(Uint8List data) {
+    if (data.isNotEmpty) {
+      chunks.add(data);
+      contentLength += data.length;
+      timer!.reset();
+    }
+    if (kDebugMode) {
+      print("Data Length: $contentLength, chunks: ${chunks.length}");
+    }
+  }
+
   void getBTState() {
     FlutterBluetoothSerial.instance.state.then((value) {
-      _bluetoothState = value;
-      if (_bluetoothState.isEnabled) {
+      bluetoothState = value;
+      if (bluetoothState.isEnabled) {
         listBondeDevices();
       }
       emit(state.copyWith(status: BluethStatus.getBTState));
@@ -50,12 +101,13 @@ class BluethCubit extends Cubit<BluethState> {
   }
 
   Future<void> switchBluetooth(bool accepted) async {
+    emit(state.copyWith(status: BluethStatus.loading));
     if (accepted) {
       await FlutterBluetoothSerial.instance.requestEnable();
     } else {
       await FlutterBluetoothSerial.instance.requestDisable();
     }
-    emit(state.copyWith(isBlueth: accepted));
+    emit(state.copyWith(isBlueth: accepted, status: BluethStatus.loaded));
   }
 
   Future<bool> getPermission(Permission permission) async {
@@ -64,9 +116,11 @@ class BluethCubit extends Cubit<BluethState> {
   }
 
   Future<bool> askPermission() async {
+    emit(state.copyWith(status: BluethStatus.loading));
     var bluetoothAdvertise = await getPermission(Permission.bluetoothAdvertise);
     var bluetoothConnect = await getPermission(Permission.bluetoothConnect);
     var bluetoothScan = await getPermission(Permission.bluetoothScan);
+    emit(state.copyWith(status: BluethStatus.loaded));
     return bluetoothAdvertise && bluetoothConnect && bluetoothScan;
   }
 }

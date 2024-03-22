@@ -2,6 +2,11 @@ import 'package:equatable/equatable.dart';
 
 enum BluethStatus {
   init,
+  loading,
+  generericLoading,
+  connecting,
+  stoppedConnecting,
+  loaded,
   blueth,
   stateChangeListener,
   initPoints,
