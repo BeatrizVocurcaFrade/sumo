@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sumo/joystick/pages/initial_pag.dart';
+import 'package:sumo/joystick/initial_pag.dart';
 
 void _errorTreatment(erro, StackTrace errorTreatment) async {
   log(erro.toString() + _errorTreatment.toString());
