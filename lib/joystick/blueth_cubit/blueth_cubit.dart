@@ -67,7 +67,9 @@ class BluethCubit extends Cubit<BluethState> {
     emit(state.copyWith(status: BluethStatus.connecting));
     BluetoothConnection connection =
         await BluetoothConnection.toAddress(device.address);
-    connection.input!.listen(_onDataReceived).onDone(() {});
+    connection.input!.listen(_onDataReceived).onDone(() {
+      emit(state.copyWith(status: BluethStatus.stoppedConnecting));
+    });
     emit(state.copyWith(status: BluethStatus.stoppedConnecting));
     return connection;
   }

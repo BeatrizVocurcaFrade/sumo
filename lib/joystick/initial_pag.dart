@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
@@ -51,15 +53,40 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
     super.dispose();
   }
 
-  // bool isInCicle(PointEntity point) =>
-  //     pow(point.x - initialPoint.x, 2) + pow(point.y - initialPoint.y, 2) <
-  //     pow(SUMO_SIZE / 2, 2);
+  bool isInCicle(PointEntity point) {
+    return distPointAndCircle(playerCubit.realBallCenterPoint(point),
+                playerCubit.realSumoCenterPoint()) -
+            BALL_SIZE / 2 >
+        0;
+  }
+
+  double distPointAndCircle(PointEntity point, PointEntity circlePoint) =>
+      (SUMO_DARK_SIZE / 2 - distBeetweenPoint(point, circlePoint));
+
   @override
   void didChangeDependencies() {
     playerCubit.initPoints(
         MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
     super.didChangeDependencies();
   }
+
+  double distBeetweenPoint(PointEntity a, PointEntity b) =>
+      sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+  // a() {
+  //   List<MiniPoint> balss = [];
+
+  //   for (var i = 0; i < 4000; i++) {
+  //     double intValue_x = Random().nextInt(300) + 30;
+  //     double intValue_y = Random().nextInt(500) + 5;
+  //     var point = PointEntity(x: intValue_x, y: intValue_y);
+  //     if (isInCicle2(point)) {
+  //       balss.add(MiniPoint(point: point, color: Colors.pink));
+  //     } else {
+  //       balss.add(MiniPoint(point: point, color: Colors.orange));
+  //     }
+  //   }
+  //   return balss;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +130,13 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                   ),
                   Visibility(
                     visible: stateBlu.status != BluethStatus.loading,
-                    replacement: const CircularProgressIndicator(),
+                    replacement: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator()),
+                    ),
                     child: Switch(
                         value: stateBlu.isBlueth,
                         onChanged: (val) async {
@@ -122,12 +155,12 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                   mode: JoystickMode.all,
                   initialJoystickAlignment: const Alignment(0.9, -0.1),
                   listener: (details) {
-                    // PointEntity futurePoint = PointEntity(
-                    //   x: pointA.x + STEP * details.x,
-                    //   y: pointA.y + STEP * details.y,
-                    // );
+                    PointEntity futurePoint = PointEntity(
+                      x: playerCubit.pointA.x + STEP * details.x,
+                      y: playerCubit.pointA.y + STEP * details.y,
+                    );
 
-                    // if (isInCicle(futurePoint)) return;
+                    if (!isInCicle(futurePoint)) return;
 
                     playerCubit.pointA = PointEntity(
                       x: playerCubit.pointA.x + STEP * details.x,
@@ -138,7 +171,7 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                   child: Stack(
                     children: [
                       SumoRing(
-                        playerCubit.initialPoint,
+                        playerCubit.sumoPoint,
                       ),
                       Ball(
                         point: playerCubit.pointB,
