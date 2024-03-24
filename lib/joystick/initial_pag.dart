@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
@@ -75,11 +74,11 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
   // a() {
   //   List<MiniPoint> balss = [];
 
-  //   for (var i = 0; i < 4000; i++) {
+  //   for (var i = 0; i < 2000; i++) {
   //     double intValue_x = Random().nextInt(300) + 30;
   //     double intValue_y = Random().nextInt(500) + 5;
   //     var point = PointEntity(x: intValue_x, y: intValue_y);
-  //     if (isInCicle2(point)) {
+  //     if (isInCicle(point)) {
   //       balss.add(MiniPoint(point: point, color: Colors.pink));
   //     } else {
   //       balss.add(MiniPoint(point: point, color: Colors.orange));
@@ -180,6 +179,7 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                       Ball(
                         point: playerCubit.pointA,
                       ),
+                      // ...a()
                     ],
                   ),
                 ),

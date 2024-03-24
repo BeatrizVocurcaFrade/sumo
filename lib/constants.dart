@@ -4,7 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 const BALL_SIZE = 30.0;
 const SUMO_SIZE = 250.0;
-const SUMO_DARK_SIZE = 250.0;
+const SUMO_DARK_SIZE = 247.0;
 const STEP = 15.0;
 const SUMO_RING_POSITION_Y = 2.8;
 
