@@ -5,4 +5,8 @@ class PointEntity {
     required this.x,
     required this.y,
   });
+  PointEntity.empty({
+    this.x = 0,
+    this.y = 0,
+  });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sumo/constants.dart';
 import 'package:sumo/joystick/entities/point_entity.dart';
+import 'package:sumo/joystick/entities/triangle_entity.dart';
 import 'player_state.dart';
 
 class PlayerCubit extends Cubit<PlayerState> {
@@ -8,6 +9,7 @@ class PlayerCubit extends Cubit<PlayerState> {
   PointEntity pointA = PointEntity(x: 0, y: 0);
   PointEntity pointB = PointEntity(x: 0, y: 0);
   PointEntity sumoPoint = PointEntity(x: 0, y: 0);
+  TriangleEntity? triangle;
   PointEntity realSumoCenterPoint() => PointEntity(
       x: sumoPoint.x + SUMO_DARK_SIZE / 2, y: sumoPoint.y + SUMO_DARK_SIZE / 2);
   PointEntity realBallCenterPoint(PointEntity point) =>
@@ -28,6 +30,8 @@ class PlayerCubit extends Cubit<PlayerState> {
       x: pointB.x,
       y: pointB.y - DIST_PLAYER_CENTER,
     );
+    triangle = TriangleEntity(center: realBallCenterPoint(pointB));
+
     emit(state.copyWith(status: PlayerStatus.initPoints));
   }
 }

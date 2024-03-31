@@ -1,11 +1,15 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:math';
+
 import 'package:fluttertoast/fluttertoast.dart';
 
 const BALL_SIZE = 30.0;
 const SUMO_SIZE = 250.0;
 const SUMO_DARK_SIZE = 247.0;
 const STEP = 15.0;
+const ANGULAR_STEP = pi / 125;
+
 const SUMO_RING_POSITION_Y = 2.8;
 
 ///quanto maior mais alto

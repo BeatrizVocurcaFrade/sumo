@@ -10,6 +10,7 @@ import 'package:sumo/joystick/entities/point_entity.dart';
 import 'package:sumo/joystick/player_cubit/player_cubit.dart';
 import 'package:sumo/joystick/player_cubit/player_state.dart';
 import 'package:sumo/joystick/widgets/ball.dart';
+import 'package:sumo/joystick/widgets/mini_point.dart';
 import 'package:sumo/joystick/widgets/sumo_ring.dart';
 
 class JoystickAreaExample extends StatefulWidget {
@@ -23,7 +24,6 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
     with WidgetsBindingObserver {
   PlayerCubit playerCubit = PlayerCubit();
   BluethCubit bluethCubit = BluethCubit();
-
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
@@ -118,7 +118,12 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                 ),
               ),
               appBar: AppBar(
-                title: const Text('Luta de Sumô'),
+                title: GestureDetector(
+                    onTap: () {
+                      playerCubit.triangle!.updateTank();
+                      setState(() {});
+                    },
+                    child: const Text('Luta de Sumô')),
                 actions: [
                   const Text(
                     'Bluetooth',
@@ -180,6 +185,15 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                         point: playerCubit.pointA,
                       ),
                       // ...a()
+                      MiniPoint(
+                          point: playerCubit.triangle!.center!,
+                          color: Colors.pink),
+                      MiniPoint(
+                          point: playerCubit.triangle!.a!, color: Colors.pink),
+                      MiniPoint(
+                          point: playerCubit.triangle!.b!, color: Colors.pink),
+                      MiniPoint(
+                          point: playerCubit.triangle!.c!, color: Colors.pink)
                     ],
                   ),
                 ),
