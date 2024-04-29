@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sumo/constants.dart';
 import 'package:sumo/joystick/entities/point_entity.dart';
@@ -9,6 +11,7 @@ class PlayerCubit extends Cubit<PlayerState> {
   PointEntity pointA = PointEntity(x: 0, y: 0);
   PointEntity pointB = PointEntity(x: 0, y: 0);
   PointEntity sumoPoint = PointEntity(x: 0, y: 0);
+  final Duration duration = const Duration(milliseconds: 1000);
   TriangleEntity? triangle;
   PointEntity realSumoCenterPoint() => PointEntity(
       x: sumoPoint.x + SUMO_DARK_SIZE / 2, y: sumoPoint.y + SUMO_DARK_SIZE / 2);
@@ -30,8 +33,37 @@ class PlayerCubit extends Cubit<PlayerState> {
       x: pointB.x,
       y: pointB.y - DIST_PLAYER_CENTER,
     );
-    triangle = TriangleEntity(center: realBallCenterPoint(pointB));
+    triangle = TriangleEntity(center: realBallCenterPoint(pointA));
 
     emit(state.copyWith(status: PlayerStatus.initPoints));
+  }
+
+  void treatRotation(PointEntity futurePoint, PointEntity lastPoint) {
+    emit(state.copyWith(status: PlayerStatus.loding));
+    var future = futurePoint.y.round();
+    var last = lastPoint.y.round();
+    if ((future - last).abs() < 5) {
+      triangle!.rotateTriangle(futurePoint.x > lastPoint.x);
+    }
+    triangle!.moveTriangle(futurePoint, lastPoint);
+    emit(state.copyWith(status: PlayerStatus.loaded));
+  }
+
+  double distBeetweenPoint(PointEntity a, PointEntity b) =>
+      sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+
+  double distPointAndCircle(PointEntity point, PointEntity circlePoint) =>
+      (SUMO_DARK_SIZE / 2 - distBeetweenPoint(point, circlePoint));
+
+  Future<void> showAnimation() async {
+    emit(state.copyWith(status: PlayerStatus.startAnimation, setAnimations: 1));
+    await Future.delayed(duration * 2);
+  }
+
+  bool isInCicle(PointEntity point) {
+    return distPointAndCircle(
+                realBallCenterPoint(point), realSumoCenterPoint()) -
+            BALL_SIZE / 2 >
+        0;
   }
 }

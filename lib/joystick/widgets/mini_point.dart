@@ -16,8 +16,8 @@ class MiniPoint extends StatelessWidget {
       left: point.x,
       top: point.y,
       child: Container(
-        width: 2,
-        height: 2,
+        width: 4,
+        height: 4,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color ?? Colors.redAccent,

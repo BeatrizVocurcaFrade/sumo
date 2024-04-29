@@ -8,7 +8,6 @@ class TriangleEntity {
   PointEntity? b;
   PointEntity? c;
   PointEntity? center;
-  double angle;
   double xComp;
   double yComp;
 
@@ -16,46 +15,45 @@ class TriangleEntity {
     required this.center,
     this.xComp = 0,
     this.yComp = 0,
-    this.angle = 0,
     this.a,
     this.b,
     this.c,
   }) {
-    // init internal angle
+    double alpha = (pi / 6);
 
-    double alpha = (pi / 3);
-
-    // init components
-    angle = pi / 5;
-    xComp = cos(angle);
-    yComp = sin(angle);
-
-    // init points triangle
     a = PointEntity(x: center!.x, y: center!.y - BALL_SIZE / 2);
     b = PointEntity(
-        x: center!.x - (cos(alpha / 3) * (BALL_SIZE / 2)),
-        y: center!.y + (sin(alpha / 3) * (BALL_SIZE / 2)));
+        x: center!.x - (cos(alpha) * (BALL_SIZE / 2)),
+        y: center!.y + (sin(alpha) * (BALL_SIZE / 2)));
     c = PointEntity(
-        x: center!.x + (cos(alpha / 3) * (BALL_SIZE / 2)),
-        y: center!.y + (sin(alpha / 3) * (BALL_SIZE / 2)));
+        x: center!.x + (cos(alpha) * (BALL_SIZE / 2)),
+        y: center!.y + (sin(alpha) * (BALL_SIZE / 2)));
   }
 
-  PointEntity rotate({required PointEntity? p, double angle = pi / 4}) =>
-      PointEntity(
-        x: cos(angle) * p!.x - sin(angle) * p.y,
-        y: sin(angle) * p.x + cos(angle) * p.y,
-      );
-
-  void rotatesTank() {
-    xComp = cos(angle);
-    yComp = sin(angle);
+  PointEntity rotate(PointEntity? p, bool isLeft) {
+    var xCe = (p!.x - center!.x);
+    var yCe = (p.y - center!.y);
+    var angle = isLeft ? -ANGULAR_STEP : ANGULAR_STEP;
+    return PointEntity(
+      x: center!.x + xCe * cos(angle) - yCe * sin(angle),
+      y: center!.y + xCe * sin(angle) + yCe * cos(angle),
+    );
   }
 
-  void updateTank() {
-    a = rotate(p: a);
-    b = rotate(p: b);
-    c = rotate(p: c);
+  void rotateTriangle(bool isLeft) {
+    a = rotate(a, isLeft);
+    b = rotate(b, isLeft);
+    c = rotate(c, isLeft);
+  }
 
-    // rotatesTank();
+  PointEntity increasePoint(PointEntity p, double x, double y) =>
+      PointEntity(x: p.x + x, y: p.y + y);
+  void moveTriangle(PointEntity futurePoint, PointEntity lastPoint) {
+    var x = futurePoint.x - lastPoint.x;
+    var y = futurePoint.y - lastPoint.y;
+    a = increasePoint(a!, x, y);
+    b = increasePoint(b!, x, y);
+    c = increasePoint(c!, x, y);
+    center = increasePoint(center!, x, y);
   }
 }

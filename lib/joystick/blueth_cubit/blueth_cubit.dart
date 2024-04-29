@@ -12,7 +12,7 @@ class BluethCubit extends Cubit<BluethState> {
   List<BluetoothDevice> devices = [];
   List<List<int>> chunks = [];
   int contentLength = 0;
-  Uint8List _bytes = Uint8List(0);
+  // Uint8List _bytes = Uint8List(0);
   RestartableTimer? timer;
   void stateChangeListener() {
     FlutterBluetoothSerial.instance.onStateChanged().listen((value) {
@@ -29,33 +29,35 @@ class BluethCubit extends Cubit<BluethState> {
     });
   }
 
-  void _drawImage() {
-    emit(state.copyWith(status: BluethStatus.generericLoading));
-    if (chunks.isEmpty || contentLength == 0) return;
-    _bytes = Uint8List(contentLength);
-    int offSet = 0;
-    for (var chunk in chunks) {
-      _bytes.setRange(offSet, offSet * chunk.length, chunk);
-      offSet += chunk.length;
-    }
-    emit(state.copyWith(status: BluethStatus.loaded));
-    contentLength = 0;
-    chunks.clear();
-  }
+  // void _drawImage() {
+  //   emit(state.copyWith(status: BluethStatus.generericLoading));
+  //   if (chunks.isEmpty || contentLength == 0) return;
+  //   _bytes = Uint8List(contentLength);
+  //   int offSet = 0;
+  //   for (var chunk in chunks) {
+  //     _bytes.setRange(offSet, offSet * chunk.length, chunk);
+  //     offSet += chunk.length;
+  //   }
+  //   emit(state.copyWith(status: BluethStatus.loaded));
+  //   contentLength = 0;
+  //   chunks.clear();
+  // }
 
   void initBluetooth() {
     getBTState();
     stateChangeListener();
     listBondeDevices();
-    timer = RestartableTimer(const Duration(seconds: 1), _drawImage);
+    readData();
+    // timer = RestartableTimer(const Duration(seconds: 1), _drawImage);
   }
 
-  void sendMessage(String text, BluetoothConnection connection) async {
+  void sendMessage(String text) async {
+    if (state.conecction == null) return;
     if (text.isEmpty) return;
     var value = text.trim();
     try {
-      connection.output.add(utf8.encode(value));
-      await connection.output.allSent;
+      state.conecction!.output.add(utf8.encode(value));
+      await state.conecction!.output.allSent;
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
@@ -67,22 +69,38 @@ class BluethCubit extends Cubit<BluethState> {
     emit(state.copyWith(status: BluethStatus.connecting));
     BluetoothConnection connection =
         await BluetoothConnection.toAddress(device.address);
-    connection.input!.listen(_onDataReceived).onDone(() {
-      emit(state.copyWith(status: BluethStatus.stoppedConnecting));
-    });
-    emit(state.copyWith(status: BluethStatus.stoppedConnecting));
+    // connection.input!.listen(_onDataReceived).onDone(() {
+    //   emit(state.copyWith(status: BluethStatus.stoppedConnecting));
+    // });
+    emit(state.copyWith(
+        status: BluethStatus.stoppedConnecting, conecction: connection));
     return connection;
   }
 
-  void _onDataReceived(Uint8List data) {
-    if (data.isNotEmpty) {
-      chunks.add(data);
-      contentLength += data.length;
-      timer!.reset();
-    }
-    if (kDebugMode) {
-      print("Data Length: $contentLength, chunks: ${chunks.length}");
-    }
+  // void _onDataReceived(Uint8List data) {
+  //   if (data.isNotEmpty) {
+  //     chunks.add(data);
+  //     contentLength += data.length;
+  //     timer!.reset();
+  //   }
+  //   if (kDebugMode) {
+  //     print("Data Length: $contentLength, chunks: ${chunks.length}");
+  //   }
+  // }
+
+  void readData() {
+    if (state.conecction == null) return;
+    state.conecction!.input!.listen((Uint8List data) {
+      String message = String.fromCharCodes(data);
+      if (kDebugMode) {
+        print('Dados recebidos: $message');
+        emit(state.copyWith(messageReceived: message));
+      }
+    }).onDone(() {
+      if (kDebugMode) {
+        print('Conexão Bluetooth encerrada.');
+      }
+    });
   }
 
   void getBTState() {

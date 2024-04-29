@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
@@ -10,8 +9,6 @@ import 'package:sumo/joystick/entities/point_entity.dart';
 import 'package:sumo/joystick/player_cubit/player_cubit.dart';
 import 'package:sumo/joystick/player_cubit/player_state.dart';
 import 'package:sumo/joystick/widgets/ball.dart';
-import 'package:sumo/joystick/widgets/mini_point.dart';
-import 'package:sumo/joystick/widgets/sumo_ring.dart';
 
 class JoystickAreaExample extends StatefulWidget {
   const JoystickAreaExample({super.key});
@@ -52,16 +49,6 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
     super.dispose();
   }
 
-  bool isInCicle(PointEntity point) {
-    return distPointAndCircle(playerCubit.realBallCenterPoint(point),
-                playerCubit.realSumoCenterPoint()) -
-            BALL_SIZE / 2 >
-        0;
-  }
-
-  double distPointAndCircle(PointEntity point, PointEntity circlePoint) =>
-      (SUMO_DARK_SIZE / 2 - distBeetweenPoint(point, circlePoint));
-
   @override
   void didChangeDependencies() {
     playerCubit.initPoints(
@@ -69,8 +56,6 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
     super.didChangeDependencies();
   }
 
-  double distBeetweenPoint(PointEntity a, PointEntity b) =>
-      sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
   // a() {
   //   List<MiniPoint> balss = [];
 
@@ -96,6 +81,11 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
           bloc: playerCubit,
           builder: (context, state) {
             return Scaffold(
+              floatingActionButton: FloatingActionButton.extended(
+                  onPressed: () {
+                    bluethCubit.sendMessage("textdsadsa");
+                  },
+                  label: const Text("Send Data")),
               drawer: Drawer(
                 child: Column(
                   children: [
@@ -120,10 +110,11 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
               appBar: AppBar(
                 title: GestureDetector(
                     onTap: () {
-                      playerCubit.triangle!.updateTank();
+                      // playerCubit.showAnimation();
+                      // playerCubit.triangle!.updateTank();
                       setState(() {});
                     },
-                    child: const Text('Luta de Sumô')),
+                    child: Text('Luta de Sumô - ${stateBlu.messageReceived}')),
                 actions: [
                   const Text(
                     'Bluetooth',
@@ -164,8 +155,8 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                       y: playerCubit.pointA.y + STEP * details.y,
                     );
 
-                    if (!isInCicle(futurePoint)) return;
-
+                    if (!playerCubit.isInCicle(futurePoint)) return;
+                    playerCubit.treatRotation(futurePoint, playerCubit.pointA);
                     playerCubit.pointA = PointEntity(
                       x: playerCubit.pointA.x + STEP * details.x,
                       y: playerCubit.pointA.y + STEP * details.y,
@@ -174,26 +165,32 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                   },
                   child: Stack(
                     children: [
-                      SumoRing(
-                        playerCubit.sumoPoint,
-                      ),
-                      Ball(
-                        point: playerCubit.pointB,
-                        color: Colors.green,
-                      ),
+                      // SumoRing(
+                      //   playerCubit.sumoPoint,
+                      // ),
+                      // Ball(
+                      //   point: playerCubit.pointB,
+                      //   color: Colors.green,
+                      // ),
                       Ball(
                         point: playerCubit.pointA,
                       ),
-                      // ...a()
-                      MiniPoint(
-                          point: playerCubit.triangle!.center!,
-                          color: Colors.pink),
-                      MiniPoint(
-                          point: playerCubit.triangle!.a!, color: Colors.pink),
-                      MiniPoint(
-                          point: playerCubit.triangle!.b!, color: Colors.pink),
-                      MiniPoint(
-                          point: playerCubit.triangle!.c!, color: Colors.pink)
+                      // // ...a()
+                      // MiniPoint(
+                      //     point: playerCubit.triangle!.center!,
+                      //     color: Colors.orange),
+                      // MiniPoint(
+                      //   point: playerCubit.triangle!.a!,
+                      //   color: Colors.blue,
+                      // ),
+                      // MiniPoint(
+                      //   point: playerCubit.triangle!.b!,
+                      //   color: Colors.orange,
+                      // ),
+                      // MiniPoint(
+                      //   point: playerCubit.triangle!.c!,
+                      //   color: Colors.orange,
+                      // )
                     ],
                   ),
                 ),
