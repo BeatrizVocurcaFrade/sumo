@@ -20,10 +20,12 @@ class BluethState extends Equatable {
   final BluethStatus status;
   final String messageReceived;
   final BluetoothConnection? conecction;
+  final BluetoothDevice? selectedDevice;
 
   const BluethState({
     this.isBlueth = false,
     this.conecction,
+    this.selectedDevice,
     this.messageReceived = '',
     required this.status,
   });
@@ -31,6 +33,7 @@ class BluethState extends Equatable {
   @override
   List<Object?> get props => [
         isBlueth,
+        selectedDevice,
         messageReceived,
         conecction,
         status,
@@ -38,11 +41,13 @@ class BluethState extends Equatable {
 
   BluethState copyWith({
     bool? isBlueth,
+    BluetoothDevice? selectedDevice,
     String? messageReceived,
     BluetoothConnection? conecction,
     BluethStatus? status,
   }) =>
       BluethState(
+        selectedDevice: selectedDevice ?? this.selectedDevice,
         conecction: conecction ?? this.conecction,
         messageReceived: messageReceived ?? this.messageReceived,
         isBlueth: isBlueth ?? this.isBlueth,

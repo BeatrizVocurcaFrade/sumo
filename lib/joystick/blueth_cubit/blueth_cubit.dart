@@ -12,22 +12,24 @@ class BluethCubit extends Cubit<BluethState> {
   List<BluetoothDevice> devices = [];
   List<List<int>> chunks = [];
   int contentLength = 0;
+  BluetoothConnection? connection;
+
   // Uint8List _bytes = Uint8List(0);
-  RestartableTimer? timer;
-  void stateChangeListener() {
-    FlutterBluetoothSerial.instance.onStateChanged().listen((value) {
-      bluetoothState = value;
-      if (kDebugMode) {
-        print('--State is Enabled: ${value.isEnabled}');
-      }
-      if (bluetoothState.isEnabled) {
-        listBondeDevices();
-      } else {
-        devices.clear();
-      }
-      emit(state.copyWith(status: BluethStatus.stateChangeListener));
-    });
-  }
+  // RestartableTimer? timer;
+  // void stateChangeListener() {
+  //   FlutterBluetoothSerial.instance.onStateChanged().listen((value) {
+  //     bluetoothState = value;
+  //     if (kDebugMode) {
+  //       print('--State is Enabled: ${value.isEnabled}');
+  //     }
+  //     if (bluetoothState.isEnabled) {
+  //       listBondeDevices();
+  //     } else {
+  //       devices.clear();
+  //     }
+  //     emit(state.copyWith(status: BluethStatus.stateChangeListener));
+  //   });
+  // }
 
   // void _drawImage() {
   //   emit(state.copyWith(status: BluethStatus.generericLoading));
@@ -44,38 +46,86 @@ class BluethCubit extends Cubit<BluethState> {
   // }
 
   void initBluetooth() {
-    getBTState();
-    stateChangeListener();
-    listBondeDevices();
+    // getBTState();
+    // stateChangeListener();
+    // listBondeDevices();
+    connectToDevice();
+
     readData();
     // timer = RestartableTimer(const Duration(seconds: 1), _drawImage);
   }
 
-  void sendMessage(String text) async {
-    if (state.conecction == null) return;
-    if (text.isEmpty) return;
-    var value = text.trim();
-    try {
-      state.conecction!.output.add(utf8.encode(value));
-      await state.conecction!.output.allSent;
-    } catch (e) {
-      if (kDebugMode) {
-        print(e.toString());
-      }
-    }
-  }
+  // Future<void> sendMessage(String text) async {
+  //   if (state.conecction == null) {
+  //     await connectToDevice();
+  //   }
+  //   if (text.isEmpty) return;
+  //   var value = text.trim();
+  //   try {
+  //     state.conecction!.output.add(utf8.encode(value));
+  //     await state.conecction!.output.allSent;
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print(e.toString());
+  //     }
+  //   }
+  // }
 
-  Future<BluetoothConnection> getBTConnection(BluetoothDevice device) async {
-    emit(state.copyWith(status: BluethStatus.connecting));
-    BluetoothConnection connection =
-        await BluetoothConnection.toAddress(device.address);
-    // connection.input!.listen(_onDataReceived).onDone(() {
-    //   emit(state.copyWith(status: BluethStatus.stoppedConnecting));
-    // });
-    emit(state.copyWith(
-        status: BluethStatus.stoppedConnecting, conecction: connection));
-    return connection;
-  }
+  // Future<void> connectToDevice() async {
+  //   List<BluetoothDevice> devices = [];
+
+  //   // Lista dispositivos emparelhados
+  //   devices = await FlutterBluetoothSerial.instance.getBondedDevices();
+
+  //   // Escolhe dispositivo HC-06
+  //   BluetoothDevice hc06 =
+  //       devices.firstWhere((device) => device.name == "HC-06");
+
+  //   // Tenta conectar ao dispositivo
+  //   try {
+  //     connection = await BluetoothConnection.toAddress(hc06.address);
+  //     print('Conexão estabelecida com sucesso.');
+  //   } catch (error) {
+  //     print('Erro ao conectar: $error');
+  //   }
+  // }
+
+  // Future<BluetoothConnection?> connectToDevice() async {
+  //   String address = "98:D3:71:FD:30:21";
+  //   emit(state.copyWith(status: BluethStatus.connecting));
+  //   BluetoothConnection connection;
+  //   try {
+  //     connection = await BluetoothConnection.toAddress(address);
+  //     print('Conexão estabelecida com sucesso.');
+  //     emit(state.copyWith(
+  //         status: BluethStatus.stoppedConnecting, conecction: connection));
+  //     return connection;
+  //   } catch (error) {
+  //     print('Erro ao conectar: $error');
+  //     return null;
+  //   }
+  // }
+
+  // Future<BluetoothConnection?> getBTConnection(BluetoothDevice? deviceP) async {
+  //   if (deviceP == null && state.selectedDevice == null) return null;
+  //   BluetoothDevice device;
+  //   if (deviceP == null) {
+  //     device = state.selectedDevice!;
+  //   } else {
+  //     device = deviceP;
+  //   }
+
+  //   emit(state.copyWith(
+  //       status: BluethStatus.connecting, selectedDevice: deviceP));
+  //   BluetoothConnection connection =
+  //       await BluetoothConnection.toAddress(device.address);
+  //   // connection.input!.listen(_onDataReceived).onDone(() {
+  //   //   emit(state.copyWith(status: BluethStatus.stoppedConnecting));
+  //   // });
+  //   emit(state.copyWith(
+  //       status: BluethStatus.stoppedConnecting, conecction: connection));
+  //   return connection;
+  // }
 
   // void _onDataReceived(Uint8List data) {
   //   if (data.isNotEmpty) {
@@ -88,8 +138,10 @@ class BluethCubit extends Cubit<BluethState> {
   //   }
   // }
 
-  void readData() {
-    if (state.conecction == null) return;
+  Future<void> readData() async {
+    if (state.conecction == null) {
+      await connectToDevice();
+    }
     state.conecction!.input!.listen((Uint8List data) {
       String message = String.fromCharCodes(data);
       if (kDebugMode) {
@@ -103,20 +155,45 @@ class BluethCubit extends Cubit<BluethState> {
     });
   }
 
-  void getBTState() {
-    FlutterBluetoothSerial.instance.state.then((value) {
-      bluetoothState = value;
-      if (bluetoothState.isEnabled) {
-        listBondeDevices();
-      }
-      emit(state.copyWith(status: BluethStatus.getBTState));
-    });
+  // void getBTState() {
+  //   FlutterBluetoothSerial.instance.state.then((value) {
+  //     bluetoothState = value;
+  //     if (bluetoothState.isEnabled) {
+  //       listBondeDevices();
+  //     }
+  //     emit(state.copyWith(status: BluethStatus.getBTState));
+  //   });
+  // }
+
+  // void listBondeDevices() {
+  //   FlutterBluetoothSerial.instance.getBondedDevices().then((value) {
+  //     devices = value;
+  //     emit(state.copyWith(status: BluethStatus.listBondeDevices));
+  //   });
+  // }
+
+  Future<void> connectToDevice() async {
+    // Lista dispositivos emparelhados
+    devices = await FlutterBluetoothSerial.instance.getBondedDevices();
+
+    // Escolhe dispositivo HC-06
+    BluetoothDevice hc06 =
+        devices.firstWhere((device) => device.name == "HC-06");
+
+    // Tenta conectar ao dispositivo
+    try {
+      connection = await BluetoothConnection.toAddress(hc06.address);
+      print('Conexão estabelecida com sucesso.');
+    } catch (error) {
+      print('Erro ao conectar: $error');
+    }
   }
 
-  void listBondeDevices() {
-    FlutterBluetoothSerial.instance.getBondedDevices().then((value) {
-      devices = value;
-      emit(state.copyWith(status: BluethStatus.listBondeDevices));
+  void sendData(String data) {
+    if (connection == null) return;
+    connection!.output.add(Uint8List.fromList(data.codeUnits));
+    connection!.output.allSent.then((_) {
+      print('Dados enviados com sucesso: $data');
     });
   }
 
@@ -124,6 +201,7 @@ class BluethCubit extends Cubit<BluethState> {
     emit(state.copyWith(status: BluethStatus.loading));
     if (accepted) {
       await FlutterBluetoothSerial.instance.requestEnable();
+      connectToDevice();
     } else {
       await FlutterBluetoothSerial.instance.requestDisable();
     }

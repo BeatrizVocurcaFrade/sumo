@@ -32,19 +32,22 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
     super.initState();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state.index == 0) {
-      if (bluethCubit.bluetoothState.isEnabled) {
-        bluethCubit.listBondeDevices();
-      }
-    }
-    super.didChangeAppLifecycleState(state);
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state.index == 0) {
+  //     if (bluethCubit.bluetoothState.isEnabled) {
+  //       bluethCubit.listBondeDevices();
+  //     }
+  //   }
+  //   super.didChangeAppLifecycleState(state);
+  // }
 
   @override
   void dispose() {
-    bluethCubit.timer!.cancel();
+    // bluethCubit.timer!.cancel();
+    if (bluethCubit.connection != null) {
+      bluethCubit.connection!.dispose();
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -83,7 +86,7 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
             return Scaffold(
               floatingActionButton: FloatingActionButton.extended(
                   onPressed: () {
-                    bluethCubit.sendMessage("textdsadsa");
+                    bluethCubit.sendData("textdsadsa");
                   },
                   label: const Text("Send Data")),
               drawer: Drawer(
@@ -100,7 +103,7 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
                               : device.name.toString(),
                           onTap: () {
                             if (stateBlu.status != BluethStatus.connecting) {
-                              bluethCubit.getBTConnection(device);
+                              bluethCubit.connectToDevice();
                             }
                           },
                         ))
