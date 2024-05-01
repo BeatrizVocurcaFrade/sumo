@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sumo/joystick/initial_pag.dart';
+import 'package:sumo/joystick/chat/main_page.dart';
 
 void _errorTreatment(erro, StackTrace errorTreatment) async {
   log(erro.toString() + _errorTreatment.toString());
@@ -11,10 +11,10 @@ void _errorTreatment(erro, StackTrace errorTreatment) async {
 void main() {
   runZonedGuarded(() {
     WidgetsFlutterBinding.ensureInitialized();
-    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight])
-        .then((_) {
-      runApp(const JoystickExampleApp());
-    });
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight])
+    //     .then((_) {
+    runApp(const JoystickExampleApp());
+    // });
   }, _errorTreatment);
 }
 
@@ -26,6 +26,6 @@ class JoystickExampleApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(),
-        home: const JoystickAreaExample());
+        home: MainPage());
   }
 }

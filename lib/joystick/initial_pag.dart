@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
 import 'package:sumo/constants.dart';
@@ -24,6 +25,8 @@ class _JoystickAreaExampleState extends State<JoystickAreaExample>
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight])
+        .then((_) {});
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       playerCubit.initPoints(MediaQuery.of(context).size.width,
           MediaQuery.of(context).size.height);
