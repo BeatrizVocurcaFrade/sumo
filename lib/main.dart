@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:sumo/joystick/chat/main_page.dart';
 
 void _errorTreatment(erro, StackTrace errorTreatment) async {
@@ -26,6 +25,6 @@ class JoystickExampleApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(),
-        home: MainPage());
+        home: const MainPage());
   }
 }

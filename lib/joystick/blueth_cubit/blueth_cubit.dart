@@ -181,9 +181,13 @@ class BluethCubit extends Cubit<BluethState> {
     // Tenta conectar ao dispositivo
     try {
       connection = await BluetoothConnection.toAddress(hc06.address);
-      print('Conexão estabelecida com sucesso.');
+      if (kDebugMode) {
+        print('Conexão estabelecida com sucesso.');
+      }
     } catch (error) {
-      print('Erro ao conectar: $error');
+      if (kDebugMode) {
+        print('Erro ao conectar: $error');
+      }
     }
   }
 
@@ -191,7 +195,9 @@ class BluethCubit extends Cubit<BluethState> {
     if (connection == null) return;
     connection!.output.add(Uint8List.fromList(data.codeUnits));
     connection!.output.allSent.then((_) {
-      print('Dados enviados com sucesso: $data');
+      if (kDebugMode) {
+        print('Dados enviados com sucesso: $data');
+      }
     });
   }
 

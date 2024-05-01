@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -39,15 +39,17 @@ class _ChatPage extends State<ChatPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      BluetoothConnection.toAddress(widget.server.address).then((_connection) {
-        print('Connected to the device');
-        connection = _connection;
+      BluetoothConnection.toAddress(widget.server.address).then((connection) {
+        if (kDebugMode) {
+          print('Connected to the device');
+        }
+        connection = connection;
         setState(() {
           isConnecting = false;
           isDisconnecting = false;
         });
 
-        connection!.input!.listen(_onDataReceived).onDone(() {
+        connection.input!.listen(_onDataReceived).onDone(() {
           // Example: Detect which side closed the connection
           // There should be `isDisconnecting` flag to show are we are (locally)
           // in middle of disconnecting process, should be set before calling
@@ -55,17 +57,25 @@ class _ChatPage extends State<ChatPage> {
           // If we except the disconnection, `onDone` should be fired as result.
           // If we didn't except this (no flag set), it means closing by remote.
           if (isDisconnecting) {
-            print('Disconnecting locally!');
+            if (kDebugMode) {
+              print('Disconnecting locally!');
+            }
           } else {
-            print('Disconnected remotely!');
+            if (kDebugMode) {
+              print('Disconnected remotely!');
+            }
           }
-          if (this.mounted) {
+          if (mounted) {
             setState(() {});
           }
         });
       }).catchError((error) {
-        print('Cannot connect, exception occured');
-        print(error);
+        if (kDebugMode) {
+          print('Cannot connect, exception occured');
+        }
+        if (kDebugMode) {
+          print(error);
+        }
       });
     });
   }
@@ -85,9 +95,9 @@ class _ChatPage extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Row> list = messages.map((_message) {
+    final List<Row> list = messages.map((message) {
       return Row(
-        mainAxisAlignment: _message.whom == clientID
+        mainAxisAlignment: message.whom == clientID
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         children: <Widget>[
@@ -97,12 +107,12 @@ class _ChatPage extends State<ChatPage> {
             width: 222.0,
             decoration: BoxDecoration(
                 color:
-                    _message.whom == clientID ? Colors.blueAccent : Colors.grey,
+                    message.whom == clientID ? Colors.blueAccent : Colors.grey,
                 borderRadius: BorderRadius.circular(7.0)),
             child: Text(
                 (text) {
                   return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
-                }(_message.text.trim()),
+                }(message.text.trim()),
                 style: const TextStyle(color: Colors.white)),
           ),
         ],
@@ -164,11 +174,11 @@ class _ChatPage extends State<ChatPage> {
   void _onDataReceived(Uint8List data) {
     // Allocate buffer for parsed data
     int backspacesCounter = 0;
-    data.forEach((byte) {
+    for (var byte in data) {
       if (byte == 8 || byte == 127) {
         backspacesCounter++;
       }
-    });
+    }
     Uint8List buffer = Uint8List(data.length - backspacesCounter);
     int bufferIndex = buffer.length;
 
@@ -215,7 +225,7 @@ class _ChatPage extends State<ChatPage> {
     text = text.trim();
     textEditingController.clear();
 
-    if (text.length > 0) {
+    if (text.isNotEmpty) {
       try {
         connection!.output.add(utf8.encode("$text\r\n"));
         await connection!.output.allSent;

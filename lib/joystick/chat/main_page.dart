@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:sumo/joystick/chat/communication.dart';
@@ -95,10 +96,11 @@ class _MainPage extends State<MainPage> {
               // Do the request and update with the true value then
               future() async {
                 // async lambda seems to not working
-                if (value)
+                if (value) {
                   await FlutterBluetoothSerial.instance.requestEnable();
-                else
+                } else {
                   await FlutterBluetoothSerial.instance.requestDisable();
+                }
               }
 
               future().then((_) {
@@ -150,12 +152,10 @@ class _MainPage extends State<MainPage> {
                   ),
                 );
 
-                if (selectedDevice != null) {
+                if (kDebugMode) {
                   print('Connect -> selected ${selectedDevice.address}');
-                  _startChat(context, selectedDevice);
-                } else {
-                  print('Connect -> no device selected');
                 }
+                _startChat(context, selectedDevice);
               },
             ),
           ),
