@@ -57,9 +57,9 @@ class Communication {
   Future<void> sendMessage(String text) async {
     text = text.trim();
 
-    if (text.length > 0) {
+    if (text.isNotEmpty) {
       try {
-        connection!.output.add(utf8.encode(text + "\r\n"));
+        connection!.output.add(utf8.encode("$text\r\n"));
         await connection!.output.allSent;
       } catch (e) {}
     }
